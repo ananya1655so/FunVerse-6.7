@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FunVerse 6.7</title>
+<style>
+:root{
+  --bg:#000000;
+  --card:#0a0f12;
+  --accent:#00ff88;
+  --accent2:#00ffee;
+  --muted:#9fbfcf;
+  --danger:#ff6b6b;
+  font-family:"Inter",system-ui,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:#eaffef;overflow:hidden}
+canvas#matrix{position:fixed;inset:0;z-index:-1;background:transparent}
+.wrap{max-width:1100px;margin:22px auto;padding:18px;overflow:auto;height:92vh}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;opacity:0;transform:translateY(-8px);animation:fadeIn .6s ease .4s forwards}
+h1{margin:0;font-size:26px;color:var(--accent2)}
+.lead{color:var(--muted);margin-top:6px;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:18px;opacity:0;transform:translateY(6px);animation:fadeIn .7s ease .8s forwards}
+.card{background:rgba(0,255,136,0.03);padding:16px;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.55);min-height:120px;transition:transform .18s ease,border .18s}
+.card:hover{transform:translateY(-6px);border:1px solid rgba(0,255,136,0.12)}
+.big{font-weight:800;font-size:20px;color:var(--accent2)}
+.small{color:var(--muted);margin-top:6px}
+.btn{background:linear-gradient(90deg,var(--accent),var(--accent2));border:none;padding:10px 14px;border-radius:12px;font-weight:700;color:#001;cursor:pointer;box-shadow:0 0 18px rgba(0,255,136,0.14);transition:transform .12s ease,box-shadow .12s}
+.btn:hover{box-shadow:0 0 30px rgba(0,255,136,0.25)}
+.btn:active{transform:scale(.98)}
+.btn2{background:transparent;border:1px solid rgba(0,255,136,0.12);padding:9px 12px;border-radius:10px;color:var(--accent2);cursor:pointer}
+.gameArea{display:none;margin-top:18px;background:rgba(0,255,136,0.02);padding:18px;border-radius:12px;min-height:360px;overflow:auto;max-height:70vh}
+.choices{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.choice{background:rgba(255,255,255,0.03);padding:10px 12px;border-radius:12px;cursor:pointer;color:var(--muted);border:1px solid rgba(0,255,136,0.06);transition:transform .12s ease,background .12s}
+.choice:hover{transform:translateY(-6px);background:rgba(0,255,136,0.07);color:var(--accent)}
+.center{text-align:center}
+.result{padding:14px;border-radius:12px;margin-top:12px;opacity:0;transform:translateY(12px);animation:resultIn .5s cubic-bezier(.2,.9,.2,1) forwards}
+.result.good{background:rgba(0,255,136,0.06);color:var(--accent)}
+.result.warn{background:rgba(0,255,238,0.06);color:var(--accent2)}
+.result.bad{background:rgba(255,107,107,0.06);color:var(--danger)}
+.footerSmall{margin-top:18px;color:var(--muted);font-size:13px}
+.money{font-weight:900;color:var(--accent2)}
+.scrollShop{max-height:48vh;overflow:auto;padding:8px;border-radius:10px;border:1px solid rgba(0,255,136,0.04);background:linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.01))}
+.itemRow{display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px dashed rgba(0,255,136,0.03)}
+.itemRow:last-child{border-bottom:none}
+#splash{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.9);z-index:999;flex-direction:column;color:#eaffef}
+.splashCard{padding:28px;border-radius:14px;background:rgba(0,255,136,0.04);box-shadow:0 0 28px rgba(0,255,136,0.06);text-align:center;animation:splashPop .9s cubic-bezier(.2,.9,.2,1) forwards}
+.splashTitle{font-size:30px;font-weight:900;color:var(--accent2)}
+.splashSub{color:var(--muted);margin-top:8px;font-size:14px}
+.startBtn{margin-top:16px;padding:10px 18px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--accent),var(--accent2));font-weight:800;color:#001;cursor:pointer;box-shadow:0 0 20px rgba(0,255,136,0.12)}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes resultIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes splashPop{0%{opacity:0;transform:scale(.95)}50%{opacity:1;transform:scale(1.02)}100%{transform:scale(1)}}
+@media(max-width:720px){header{flex-direction:column;align-items:flex-start}.grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}.wrap{height:100vh}}
+</style>
+</head>
+<body>
+<canvas id="matrix"></canvas>
+
+<div id="splash">
+  <div class="splashCard">
+    <div class="splashTitle">🚀 FunVerse 6.7</div>
+    <div class="splashSub">Play • Learn • Laugh • Repeat<br/>4 mini games by Ananya</div>
+    <button class="startBtn" id="startBtn">ENTER THE VERSE</button>
+  </div>
+</div>
+
+<div class="wrap" id="mainWrap">
+  <header>
+    <div>
+      <h1>FunVerse 6.7</h1>
+      <div class="lead">Save the Planet · Spend ₹100 Crore · How Smart Are You? · Mini Life Simulator</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn" id="homeBtn">Home</button>
+      <button class="btn2" id="readmeBtn">README</button>
+      <button class="btn2" id="introBtn">Show Intro</button>
+    </div>
+  </header>
+
+  <main id="mainMenu" class="grid">
+    <div class="card center">
+      <div class="big">🌱 Save the Planet</div>
+      <div class="small">19 eco choices — be an Eco Hero!</div>
+      <div style="margin-top:12px"><button class="btn" onclick="startGame('save')">Play</button></div>
+    </div>
+
+    <div class="card center">
+      <div class="big">💸 Spend ₹100 Crore</div>
+      <div class="small">Scroll shop · Live balance · Checkout</div>
+      <div style="margin-top:12px"><button class="btn" onclick="startGame('spend')">Play</button></div>
+    </div>
+
+    <div class="card center">
+      <div class="big">🧠 How Smart Are You?</div>
+      <div class="small">20 question quiz — get your rank!</div>
+      <div style="margin-top:12px"><button class="btn" onclick="startGame('quiz')">Play</button></div>
+    </div>
+
+    <div class="card center">
+      <div class="big">🕹️ Mini Life Simulator</div>
+      <div class="small">20 funny life choices — find your ending!</div>
+      <div style="margin-top:12px"><button class="btn" onclick="startGame('life')">Play</button></div>
+    </div>
+  </main>
+
+  <section id="gameArea" class="gameArea">
+    <div id="gameCard"></div>
+    <div style="margin-top:12px;display:flex;gap:10px">
+      <button class="btn2" id="backBtn">⟵ Back</button>
+      <button class="btn" id="replayBtn">Replay</button>
+    </div>
+  </section>
+
+  <footer><div class="footerSmall">Created by Ananya Davuluri • FunVerse 6.7</div></footer>
+</div>
+</script>
+<script>
+/* ---------- MATRIX RAIN BACKGROUND ---------- */
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+let fontSize = 14, columns, drops, letters;
+function resizeCanvas(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  fontSize = Math.max(14, Math.floor(window.innerWidth / 120));
+  columns = Math.floor(canvas.width / fontSize);
+  drops = Array(columns).fill(1);
+  letters = 'アァカサタナハマヤラワ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  letters = letters.split('');
+}
+resizeCanvas();
+function drawMatrix(){
+  ctx.fillStyle = 'rgba(0,0,0,0.08)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = 'rgba(0,255,136,0.85)';
+  ctx.font = fontSize + 'px monospace';
+  for(let i=0;i<drops.length;i++){
+    const text = letters[Math.floor(Math.random()*letters.length)];
+    ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+    if(drops[i]*fontSize > canvas.height && Math.random()>0.975){drops[i]=0;}
+    drops[i]++;
+  }
+}
+setInterval(drawMatrix, 50);
+window.addEventListener('resize', resizeCanvas);
+
+/* ---------- GAME DATA ---------- */
+// Save the Planet
+const saveScenarios=[
+{q:"Plastic bottle or Metal bottle?",good:"Metal bottle 🥤",bad:"Plastic bottle 🧴"},
+{q:"Cloth bag or Plastic bag?",good:"Cloth bag 👜",bad:"Plastic bag 🛍️"},
+{q:"Public transport or Bike alone?",good:"Public transport 🚌",bad:"Ride alone 🏍️"},
+{q:"Recycle trash or Dump on road?",good:"Recycle ♻️",bad:"Dump 🗑️"},
+{q:"Install solar panels or diesel generator?",good:"Solar panels ☀️",bad:"Generator ⛽"},
+{q:"Plant a tree or buy firecrackers?",good:"Plant a tree 🌱",bad:"Firecrackers 🎆"},
+{q:"Repair phone or buy new?",good:"Repair 🔧",bad:"Buy new 📱"},
+{q:"Buy thrift or fast fashion?",good:"Thrift 👕",bad:"Fast fashion 🧥"},
+{q:"Switch off lights or leave on?",good:"Switch off 💡",bad:"Leave on 🌃"},
+{q:"Homemade lunch or fast food?",good:"Homemade 🍱",bad:"Fast food 🍔"},
+{q:"Compost waste or throw in trash?",good:"Compost 🌿",bad:"Trash 🗑️"},
+{q:"Digital notes or paper notebooks?",good:"Digital 💻",bad:"Paper 📄"},
+{q:"Walk short trips or use car?",good:"Walk 🚶",bad:"Car 🚗"},
+{q:"Use metal straw or plastic straw?",good:"Metal 🧃",bad:"Plastic 🥤"},
+{q:"Join a beach cleanup or litter?",good:"Cleanup 🏖️",bad:"Litter 🗑️"},
+{q:"Bikepool or solo ride?",good:"Bikepool 🚴",bad:"Solo ride 🚗"},
+{q:"Glass bottle or PET bottle?",good:"Glass 🍾",bad:"PET 🧴"},
+{q:"Buy local produce or imported?",good:"Local 🌾",bad:"Imported 🌍"},
+{q:"Do an eco project or copy-paste?",good:"Eco project 💡",bad:"Copy-paste 😭"}];
+
+// Spend ₹100 Crore (live counter)
+const INITIAL_BALANCE=1000000000;
+const spendItems=[
+{name:"Momos 🥟",cost:120},{name:"Chai ☕",cost:20},{name:"Chocolate 🍫",cost:80},
+{name:"Movie Ticket 🎬",cost:250},{name:"Swiggy Meal 🍔",cost:300},
+{name:"College Notes 📄",cost:200},{name:"Hostel Mess Month 🍛",cost:4000},
+{name:"Refurbished Laptop 💻",cost:25000},{name:"Gaming Mouse+Keyboard 🎮",cost:7000},
+{name:"Gaming PC (Budget) 🖥️",cost:80000},{name:"High-End PC 🔥🖥️",cost:250000},
+{name:"AirPods 🎧",cost:25000},{name:"iPhone 15 Pro Max 📱",cost:165000},
+{name:"Apple Vision Pro 👓",cost:350000},{name:"Zara Jacket 👕",cost:18000},
+{name:"Royal Enfield 🏍️",cost:230000},{name:"Campus Scooter 🛵",cost:85000},
+{name:"PlayStation 5 🎮",cost:65000},{name:"Sponsor College Fest 🎓",cost:600000},
+{name:"SRM Canteen for 1 Day 🍱",cost:120000},{name:"Semester Fee 🎓",cost:180000},
+{name:"Trip to Goa with Friends 🏖️",cost:250000},{name:"Trip to Maldives ✈️",cost:1300000},
+{name:"Tesla Model 3 🚗",cost:6200000},{name:"Luxury Apartment 🏰",cost:85000000},
+{name:"Buy SRM University 😂",cost:1000000000},{name:"Bollywood Cameo 🎥",cost:25000000},
+{name:"Large Charity Donation 💖",cost:55000000},{name:"Sponsor Tech Startup 🚀",cost:12000000},
+{name:"Hostel Renovation 🛏",cost:2500000},{name:"College Merch for All 👕",cost:450000}
+];
+
+// Quiz 20 Q
+const quizQuestions=[
+{q:"Which planet is called the Red Planet?",opts:["Earth","Mars","Venus"],a:1},
+{q:"Who invented the light bulb?",opts:["Edison","Newton","Tesla"],a:0},
+{q:"Capital of Japan?",opts:["Beijing","Tokyo","Seoul"],a:1},
+{q:"Which icon is Apple?",opts:["🍎","🐦","🔷"],a:0},
+{q:"Fastest land animal?",opts:["Cheetah","Tiger","Deer"],a:0},
+{q:"Tallest mountain?",opts:["K2","Everest","Alps"],a:1},
+{q:"National fruit of India?",opts:["Banana","Mango","Apple"],a:1},
+{q:"Largest ocean?",opts:["Pacific","Atlantic","Indian"],a:0},
+{q:"5×8=?",opts:["45","40","48"],a:1},
+{q:"Symbol of Oxygen?",opts:["O","Ox","O₂"],a:2},
+{q:"Founder of Microsoft?",opts:["Elon Musk","Bill Gates","Steve Jobs"],a:1},
+{q:"Author of Harry Potter?",opts:["J.K. Rowling","Tolkien","Mark Twain"],a:0},
+{q:"1 GB = ? MB",opts:["1000","1024","512"],a:1},
+{q:"Indian currency symbol?",opts:["$","€","₹"],a:2},
+{q:"Capital of France?",opts:["Paris","Rome","Berlin"],a:0},
+{q:"Father of Computing?",opts:["Charles Babbage","Alan Turing","Pascal"],a:0},
+{q:"2⁵ =?",opts:["25","32","64"],a:1},
+{q:"Sun is a ...",opts:["Planet","Star","Comet"],a:1},
+{q:"Plants release?",opts:["O₂","CO₂","H₂"],a:0},
+{q:"PM of India (2025)?",opts:["Narendra Modi","Rahul Gandhi","Virat Kohli"],a:0}
+];
+
+// Life Simulator (funny hidden endings)
+const lifeDecisions=[
+{q:"You're born — Cry or Sleep?",good:"Sleep 💤",bad:"Cry 👶"},
+{q:"First steps — Run or Crawl?",good:"Run 🏃",bad:"Crawl 🐢"},
+{q:"School exam — Study or Cheat?",good:"Study 📚",bad:"Cheat 😬"},
+{q:"Sports Day — Try or Skip?",good:"Try 🏅",bad:"Skip 😴"},
+{q:"College life — Attend or Drop?",good:"Attend 🎓",bad:"Drop 🚫"},
+{q:"Internship — Work or Chill?",good:"Work hard 💪",bad:"Chill 🧃"},
+{q:"Career — Engineer or Influencer?",good:"Engineer 💻",bad:"Influencer 💄"},
+{q:"Money — Invest or Waste?",good:"Invest 💼",bad:"Waste 💸"},
+{q:"Relationship — Talk or Ghost?",good:"Communicate 💬",bad:"Ghost 😶"},
+{q:"Vacation — Trek or Netflix?",good:"Trek ⛰️",bad:"Netflix 📺"},
+{q:"Health — Workout or Junk?",good:"Workout 🏋️",bad:"Junk 🍟"},
+{q:"Fight — Apologize or Block?",good:"Apologize 🤝",bad:"Block 🚫"},
+{q:"Traffic — Calm or Rage?",good:"Calm 😌",bad:"Rage 😡"},
+{q:"Rain — Umbrella or Run?",good:"Umbrella ☂️",bad:"Run 🏃"},
+{q:"Boss calls — Answer or Ignore?",good:"Answer 📞",bad:"Ignore 🙈"},
+{q:"Startup idea — Launch or Sleep?",good:"Launch 🚀",bad:"Sleep 😴"},
+{q:"Exam tomorrow — Revise or Pray?",good:"Revise 📖",bad:"Pray 🙏"},
+{q:"Pet — Adopt or Ignore?",good:"Adopt 🐶",bad:"Ignore 😐"},
+{q:"Midlife — Travel or Overthink?",good:"Travel 🌍",bad:"Overthink 🤯"},
+{q:"Old age — Mentor or Retire?",good:"Mentor 🧓",bad:"Retire 😭"}
+];
+/* ---------- CORE ENGINE ---------- */
+const splash=document.getElementById('splash');
+const startBtn=document.getElementById('startBtn');
+const mainWrap=document.getElementById('mainWrap');
+const mainMenu=document.getElementById('mainMenu');
+const gameArea=document.getElementById('gameArea');
+const gameCard=document.getElementById('gameCard');
+const backBtn=document.getElementById('backBtn');
+const replayBtn=document.getElementById('replayBtn');
+const homeBtn=document.getElementById('homeBtn');
+const readmeBtn=document.getElementById('readmeBtn');
+const introBtn=document.getElementById('introBtn');
+
+let currentGame=null;
+let state={};
+
+/* Show splash once */
+window.addEventListener('load',()=>{
+  splash.style.display='flex';
+  mainWrap.setAttribute('aria-hidden','true');
+});
+startBtn.addEventListener('click',()=>{
+  splash.style.display='none';
+  mainWrap.setAttribute('aria-hidden','false');
+  mainMenu.style.display='grid';
+});
+introBtn.addEventListener('click',()=>{
+  splash.style.display='flex';
+  setTimeout(()=>{splash.style.display='none';},1200);
+});
+
+/* Navigation */
+function goHome(){
+  currentGame=null;
+  gameCard.innerHTML='';
+  gameArea.style.display='none';
+  mainMenu.style.display='grid';
+}
+backBtn.addEventListener('click',goHome);
+homeBtn.addEventListener('click',goHome);
+
+readmeBtn.addEventListener('click',()=>{
+  alert("📘 FunVerse 6.7 — Four Web Mini-Games\n\n🌱 Save the Planet\n💸 Spend ₹100 Crore (live counter + checkout)\n🧠 How Smart Are You?\n🕹️ Mini Life Simulator\n\nMade by Ananya Davuluri 💚");
+});
+
+/* Start game */
+function startGame(key){
+  currentGame=key;
+  state={index:0,score:0,balance:INITIAL_BALANCE,bought:[]};
+  mainMenu.style.display='none';
+  gameArea.style.display='block';
+  render();
+}
+replayBtn.addEventListener('click',()=>{if(currentGame){startGame(currentGame);}});
+
+/* Money format */
+function formatRupee(n){
+  n=Math.max(0,Math.floor(n));
+  const s=n.toString();
+  if(s.length<=3)return'₹'+s;
+  const last3=s.slice(-3);
+  let rest=s.slice(0,-3);
+  rest=rest.replace(/\B(?=(\d{2})+(?!\d))/g,",");
+  return'₹'+rest+','+last3;
+}
+
+/* Router */
+function render(){
+  if(currentGame==='save')renderSave();
+  else if(currentGame==='spend')renderSpend();
+  else if(currentGame==='quiz')renderQuiz();
+  else if(currentGame==='life')renderLife();
+}
+
+/* ---------- SAVE ---------- */
+function renderSave(){
+  const i=state.index;
+  if(i>=saveScenarios.length)return renderSaveResult();
+  const s=saveScenarios[i];
+  gameCard.innerHTML=`
+    <div class="big">🌍 Save the Planet</div>
+    <div class="small">${s.q}</div>
+    <div class="choices">
+      <div class="choice" onclick="chooseSave(true)">${s.good}</div>
+      <div class="choice" onclick="chooseSave(false)">${s.bad}</div>
+    </div>
+    <div class="small">Question ${i+1}/${saveScenarios.length}</div>`;
+}
+function chooseSave(isGood){
+  if(isGood)state.score++;
+  state.index++;
+  flashAndRender(render);
+}
+function renderSaveResult(){
+  const sc=state.score;
+  let title='',cls='';
+  if(sc>=17){title='🌳 Eco Hero Supreme!';cls='good';}
+  else if(sc>=10){title='🌱 Eco Aware Citizen';cls='warn';}
+  else if(sc>=5){title='🍃 Trying Your Best!';cls='warn';}
+  else{title='☠️ Planet Destroyer';cls='bad';}
+  gameCard.innerHTML=`
+    <div class="result ${cls} center">
+      <div class="big">${title}</div>
+      <div>You made ${sc} eco choices out of ${saveScenarios.length}</div>
+      <div style="margin-top:10px">
+        <button class="btn" onclick="startGame('save')">Play Again</button>
+        <button class="btn2" onclick="goHome()">Home</button>
+      </div>
+    </div>`;
+}
+
+/* ---------- SPEND ₹100 CRORE ---------- */
+function renderSpend(){
+  const htmlItems=spendItems.map((it,idx)=>`
+    <div class="itemRow">
+      <div>${idx+1}. ${it.name}</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div>${formatRupee(it.cost)}</div>
+        <button class="btn2" onclick="buyItem(${idx})">Buy</button>
+      </div>
+    </div>`).join('');
+  gameCard.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="big">💸 Spend ₹100 Crore</div>
+      <div class="small">Balance: <span class="money" id="balance">${formatRupee(state.balance)}</span></div>
+    </div>
+    <div class="scrollShop">${htmlItems}</div>
+    <div class="small" style="margin-top:10px">Items bought: ${state.bought.length}</div>
+    <div style="margin-top:10px;text-align:center">
+      <button class="btn" onclick="checkout()">💰 Checkout</button>
+    </div>`;
+}
+function buyItem(i){
+  const it=spendItems[i];
+  if(state.balance-it.cost<0)return alert("💀 Not enough funds!");
+  state.balance-=it.cost;
+  state.bought.push(it);
+  document.getElementById('balance').textContent=formatRupee(state.balance);
+}
+function checkout(){
+  renderSpendResult();
+}
+function renderSpendResult(){
+  const rem=state.balance;
+  let title='',cls='';
+  if(rem<=0){title='💸 Broke Legend!';cls='bad';}
+  else if(rem<=10000000){title='💰 Smart Spender!';cls='warn';}
+  else if(rem<=500000000){title='🧠 Investor Mode';cls='warn';}
+  else{title='🐢 Budget Baba';cls='good';}
+  const items=state.bought.map(it=>it.name).slice(-6).join(' • ');
+  gameCard.innerHTML=`
+    <div class="result ${cls} center">
+      <div class="big">${title}</div>
+      <div>Remaining: <strong>${formatRupee(rem)}</strong></div>
+      <div>Items bought: ${state.bought.length}</div>
+      <div style="margin-top:8px;color:var(--muted)">${items||'You bought nothing 😭'}</div>
+      <div style="margin-top:10px">
+        <button class="btn" onclick="startGame('spend')">Play Again</button>
+        <button class="btn2" onclick="goHome()">Home</button>
+      </div>
+    </div>`;
+}
+
+/* ---------- QUIZ ---------- */
+function renderQuiz(){
+  const i=state.index;
+  if(i>=quizQuestions.length)return renderQuizResult();
+  const Q=quizQuestions[i];
+  const htmlOpts=Q.opts.map((o,idx)=>`<div class="choice" onclick="answerQuiz(${idx})">${o}</div>`).join('');
+  gameCard.innerHTML=`
+    <div class="big">🧠 How Smart Are You?</div>
+    <div class="small">${Q.q}</div>
+    <div class="choices">${htmlOpts}</div>
+    <div class="small">Question ${i+1}/${quizQuestions.length}</div>`;
+}
+function answerQuiz(c){
+  if(c===quizQuestions[state.index].a)state.score++;
+  state.index++;
+  flashAndRender(render);
+}
+function renderQuizResult(){
+  const sc=state.score;
+  let title='',cls='';
+  if(sc>=17){title='🧠 Certified Genius!';cls='good';}
+  else if(sc>=10){title='🎓 Above Average IQ';cls='warn';}
+  else if(sc>=5){title='🤓 Needs Revision';cls='warn';}
+  else{title='💀 Clueless Champ';cls='bad';}
+  gameCard.innerHTML=`
+    <div class="result ${cls} center">
+      <div class="big">${title}</div>
+      <div>Score: ${sc}/${quizQuestions.length}</div>
+      <div style="margin-top:10px">
+        <button class="btn" onclick="startGame('quiz')">Play Again</button>
+        <button class="btn2" onclick="goHome()">Home</button>
+      </div>
+    </div>`;
+}
+
+/* ---------- LIFE SIMULATOR ---------- */
+function renderLife(){
+  const i=state.index;
+  if(i>=lifeDecisions.length)return renderLifeResult();
+  const L=lifeDecisions[i];
+  gameCard.innerHTML=`
+    <div class="big">🕹️ Mini Life Simulator</div>
+    <div class="small">${L.q}</div>
+    <div class="choices">
+      <div class="choice" onclick="chooseLife(true)">${L.good}</div>
+      <div class="choice" onclick="chooseLife(false)">${L.bad}</div>
+    </div>
+    <div class="small">Stage ${i+1}/${lifeDecisions.length}</div>`;
+}
+function chooseLife(isGood){
+  if(isGood)state.score++;
+  state.index++;
+  flashAndRender(render);
+}
+function renderLifeResult(){
+  const sc=state.score;
+  let result='',cls='';
+  if(sc>=17){result='👑 You became a legend — Elon would envy you!';cls='good';}
+  else if(sc>=10){result='😊 You lived a balanced, chill life — nice job!';cls='warn';}
+  else if(sc>=5){result='😬 You survived college barely — still proud!';cls='warn';}
+  else{result='💀 You ended up broke and teaching SRM canteen recipes.';cls='bad';}
+  gameCard.innerHTML=`
+    <div class="result ${cls} center">
+      <div class="big">${result}</div>
+      <div>Good choices: ${sc}/${lifeDecisions.length}</div>
+      <div style="margin-top:10px">
+        <button class="btn" onclick="startGame('life')">Play Again</button>
+        <button class="btn2" onclick="goHome()">Home</button>
+      </div>
+    </div>`;
+}
+
+/* ---------- HELPERS ---------- */
+function flashAndRender(next){
+  gameCard.style.opacity='0';
+  setTimeout(()=>{gameCard.style.opacity='1';next();},150);
+}
+</script>
+</body>
+</html>
